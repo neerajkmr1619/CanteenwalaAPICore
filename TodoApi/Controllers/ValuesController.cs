@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TodoApi.Services;
 
 namespace TodoApi.Controllers
 {
@@ -10,27 +11,37 @@ namespace TodoApi.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private Services.Services _services;
+        public ValuesController(Services.Services services)
+        {
+            _services=services;
+        }
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-            Console.WriteLine("dfsfsf");
-            return new string[] { "value1", "value2" };
+            List<Student> students = _services.Get();
+            return Ok(students);
+            // Ok(new Student{Name=students[0].Name});
         }
 
         // GET api/values/5
         [HttpGet("{id:int}")]//it has route template with constraint 
-        public ActionResult<string> Get(int id)
+        [Produces("application/json")]//only return json
+        public IActionResult Get(int id,string value)
         {
-            return $"value {id}";
+            return Ok(new UserDetails{ID=id,Name="value"+id});
         }
 
         // POST api/values
         [HttpPost]
-        public string Post([FromBody] string value)
+        public IActionResult Post([FromBody] UserDetails details)
         {
-            Console.WriteLine("dfsfsf");
-            return value;
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return CreatedAtAction("Get",new {ID=details.ID},details);
         }
 
         // PUT api/values/5
